@@ -1,0 +1,39 @@
+#include "main.h"
+
+#define STEP_PORT GPIOA
+#define STEP_PIN  GPIO_PIN_6
+#define DIR_PORT  GPIOA
+#define DIR_PIN   GPIO_PIN_7
+
+void Stepper_Step(uint32_t steps, GPIO_PinState dir, uint32_t delay_ms)
+{
+    HAL_GPIO_WritePin(DIR_PORT, DIR_PIN, dir);
+    for (uint32_t i = 0; i < steps; i++)
+    {
+        HAL_GPIO_WritePin(STEP_PORT, STEP_PIN, GPIO_PIN_SET);
+        HAL_Delay(delay_ms);
+        HAL_GPIO_WritePin(STEP_PORT, STEP_PIN, GPIO_PIN_RESET);
+        HAL_Delay(delay_ms);
+    }
+}
+
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+
+    GPIO_PinState dir = GPIO_PIN_SET;
+    uint32_t cycle = 0;
+
+    while (1)
+    {
+        Stepper_Step(200, dir, 2);
+        cycle++;
+        if (cycle % 2 == 0)
+        {
+            dir = (dir == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET;
+        }
+        HAL_Delay(500);
+    }
+}
